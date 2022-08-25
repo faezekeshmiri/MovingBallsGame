@@ -17,9 +17,8 @@ function addNewBall(e) {
     };
     circles.forEach(circle => {
         if (isIntersect(clickPos,circle)) {
-            console.log(circle);
-            circles.splice(circle); // remove ball once you clicked on it
-            return;
+            console.log(circle.collisions);
+            // Remove ball from screen.
         }
     });
     var min = 10;
