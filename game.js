@@ -18,6 +18,8 @@ function addNewBall(e) {
     circles.forEach(circle => {
         if (isIntersect(clickPos,circle)) {
             console.log(circle);
+            circles.splice(circle); // remove ball once you clicked on it
+            return;
         }
     });
     var min = 10;
@@ -37,6 +39,7 @@ function addNewBall(e) {
     obj['color'] = color;
     var dir = directions[Math.floor(Math.random()*directions.length)];
     obj['dir'] = dir;
+    obj['collisions'] = 0;
     id++;
     circles.push(obj);
     update();
@@ -59,14 +62,19 @@ function update(){
         ctx.fill(cir);
     });
 
-    setTimeout(update,10);
+    setTimeout(update,100);
 }
 
 function move(circle) {
     y = circle.y;
     x = circle.x;
+    circles.forEach(ball => {
+        if (isColided(ball, circle) && ball.id != circle.id) {
+            colide(ball, circle);
+        }
+    });
     if (circle.dir === "up-right") {
-        if (x + 1 < 400 && y + 1 < 400){
+        if (x + 1 < 390 && y + 1 < 390){
             circle.y = y + 1;
             circle.x = x + 1;
         }
@@ -75,7 +83,7 @@ function move(circle) {
         }
     }
     else if (circle.dir === "up-left") {
-        if (x - 1 > 0 && y + 1 < 400){
+        if (x - 1 > 10 && y + 1 < 390){
             circle.y = y + 1;
             circle.x = x - 1;
         }
@@ -84,7 +92,7 @@ function move(circle) {
         }
     }
     else if (circle.dir === "down-left") {
-        if (x - 1 > 0 && y - 1 > 0){
+        if (x - 1 > 10 && y - 1 > 10){
             circle.y = y - 1;
             circle.x = x - 1;
         }
@@ -93,7 +101,7 @@ function move(circle) {
         }
     }
     else if (circle.dir === "down-right") {
-        if (x + 1 < 400 && y - 1 > 0){
+        if (x + 1 < 390 && y - 1 > 10){
             circle.y = y - 1;
             circle.x = x + 1;
         }
@@ -103,65 +111,94 @@ function move(circle) {
     }
 }
 
+function isColided(circleA, circleB) {
+    return Math.sqrt((circleA.x-circleB.x) ** 2 + (circleA.y - circleB.y) ** 2) < 22;
+}
+
+function colide(ballA, ballB) {
+    var newDir = directions[Math.floor(Math.random()*directions.length)];
+    ballA.dir = newDir;
+    ballB.dir = oppositeDir(newDir);
+    var collisionsA = ballA.collisions;
+    var collisionsB = ballB.collisions;
+    ballA.collisions = collisionsA + 1;
+    ballB.collisions = collisionsB + 1;
+}
+
 function changeDir(circle) {
     if (circle.dir === "up-right") {
-        if (x + 1 >= 400 && y + 1 >= 400) {
+        if (x + 1 >= 390 && y + 1 >= 390) {
             circle.dir = "down-left";
         }
-        else if (x + 1 >= 400) {
+        else if (x + 1 >= 390) {
             var allowedDirections = ["up-left", "down-left"];
             var newDir = allowedDirections[Math.floor(Math.random()*allowedDirections.length)];
             circle.dir = newDir;
         }
-        else if (y + 1 >= 400) {
+        else if (y + 1 >= 390) {
             var allowedDirections = ["down-left", "down-right"];
             var newDir = allowedDirections[Math.floor(Math.random()*allowedDirections.length)];
             circle.dir = newDir;
         }
     }
     else if (circle.dir === "up-left") {
-        if (x - 1 <= 0 && y + 1 >= 400) {
+        if (x - 1 <= 10 && y + 1 >= 390) {
             circle.dir = "down-right";
         }
-        else if (x - 1 <= 0) {
+        else if (x - 1 <= 10) {
             var allowedDirections = ["up-right", "down-right"];
             var newDir = allowedDirections[Math.floor(Math.random()*allowedDirections.length)];
             circle.dir = newDir;
         }
-        else if (y + 1 >= 400) {
+        else if (y + 1 >= 390) {
             var allowedDirections = ["down-left", "down-right"];
             var newDir = allowedDirections[Math.floor(Math.random()*allowedDirections.length)];
             circle.dir = newDir;
         }
     }
     else if (circle.dir === "down-right") {
-        if (x + 1 >= 400 && y - 1 <= 0) {
+        if (x + 1 >= 390 && y - 1 <= 10) {
             circle.dir = "up-left";
         }
-        else if (x + 1 >= 400) {
+        else if (x + 1 >= 390) {
             var allowedDirections = ["up-left", "down-left"];
             var newDir = allowedDirections[Math.floor(Math.random()*allowedDirections.length)];
             circle.dir = newDir;
         }
-        else if (y - 1 <= 0) {
+        else if (y - 1 <= 10) {
             var allowedDirections = ["up-right", "up-left"];
             var newDir = allowedDirections[Math.floor(Math.random()*allowedDirections.length)];
             circle.dir = newDir;
         }
     }
     else if (circle.dir === "down-left") {
-        if (x - 1 <= 0 && y - 1 <= 0) {
+        if (x - 1 <= 10 && y - 1 <= 10) {
             circle.dir = "up-right";
         }
-        else if (x - 1 <= 0) {
+        else if (x - 1 <= 10) {
             var allowedDirections = ["up-right", "down-right"];
             var newDir = allowedDirections[Math.floor(Math.random()*allowedDirections.length)];
             circle.dir = newDir;
         }
-        else if (y - 1 <= 0) {
+        else if (y - 1 <= 10) {
             var allowedDirections = ["up-right", "up-left"];
             var newDir = allowedDirections[Math.floor(Math.random()*allowedDirections.length)];
             circle.dir = newDir;
         }
+    }
+}
+
+function oppositeDir (dir) {
+    if (dir == "up-right") {
+        return "down-left";
+    }
+    else if (dir == "down-left") {
+        return "up-right";
+    }
+    else if (dir == "up-left") {
+        return "down-right";
+    }
+    else if (dir == "down-right") {
+        return "up-left";
     }
 }
